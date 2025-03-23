@@ -30,6 +30,14 @@ import androidx.navigation.compose.composable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.CoroutineScope
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Sensors
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
@@ -103,25 +111,60 @@ fun AppNavigation(sensorData: Map<String, String>, historyData: List<String>, on
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: "home"
 
     ModalNavigationDrawer(
-        drawerContent = { DrawerContent(navController, drawerState, coroutineScope) },
-        drawerState = drawerState
+        drawerContent = { 
+            DrawerContent(navController, drawerState, coroutineScope, currentRoute) 
+        },
+        drawerState = drawerState,
+        gesturesEnabled = false,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Sensor App", color = Color.White) },
+                    title = { 
+                        Text("Emergency Response",
+                            color = Color.White,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ) 
+                    },
                     navigationIcon = {
-                        IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = Color.White)
+                        IconButton(
+                            onClick = { coroutineScope.launch { drawerState.open() } },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                Icons.Filled.Menu, 
+                                contentDescription = "Menu", 
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1976D3))
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFF1976D3),
+                        actionIconContentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .shadow(8.dp)
+                        .background(MaterialTheme.colorScheme.background)
                 )
             }
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
+            Box(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
                 NavHost(navController, startDestination = "home") {
                     composable("home") { HomeScreen(sensorData, onSOSClick) }
                     composable("sensors") { SensorScreen(sensorData) }
@@ -197,23 +240,63 @@ fun HistoryScreen(historyData: List<String>) {
 }
 
 @Composable
-fun DrawerContent(navController: NavHostController, drawerState: DrawerState, coroutineScope: CoroutineScope) {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Navigation", fontSize = 24.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            coroutineScope.launch { drawerState.close() }
-            navController.navigate("home")
-        }) { Text("Home") }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            coroutineScope.launch { drawerState.close() }
-            navController.navigate("sensors")
-        }) { Text("Sensor Data") }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            coroutineScope.launch { drawerState.close() }
-            navController.navigate("history")
-        }) { Text("History") }
+fun DrawerContent(
+    navController: NavHostController,
+    drawerState: DrawerState,
+    coroutineScope: CoroutineScope,
+    currentRoute: String
+) {
+    Column(
+        modifier = Modifier
+            .width(280.dp)
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        Text("Navigation Menu", 
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+        
+        val navItems = listOf(
+            "home" to Icons.Filled.Home,
+            "sensors" to Icons.Filled.Sensors,
+            "history" to Icons.Filled.History
+        )
+
+        navItems.forEach { (route, icon) ->
+            NavigationDrawerItem(
+                icon = { Icon(icon, contentDescription = null) },
+                label = { 
+                    Text(
+                        text = route.replaceFirstChar { it.titlecase() },
+                        style = MaterialTheme.typography.bodyLarge
+                    ) 
+                },
+                selected = currentRoute == route,
+                onClick = {
+                    coroutineScope.launch {
+                        // First close the drawer
+                        drawerState.close()
+                        drawerState.close()
+                        // Then navigate after a small delay
+                        delay(50) // Allows drawer animation to start
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                modifier = Modifier.padding(vertical = 4.dp),
+                colors = NavigationDrawerItemDefaults.colors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    unselectedContainerColor = Color.Transparent.copy(alpha = 0.2f)
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Spacer(modifier = Modifier.weight(0.1f))
     }
 }
