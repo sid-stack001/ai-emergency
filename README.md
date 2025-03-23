@@ -2,15 +2,15 @@
 
 - **Emergency SOS**  
   ⚡ Instant emergency call button with haptic feedback  
-  📍 Automatic location sharing with emergency contacts  
+  📍 Automatic location sharing with emergency contacts
 
-- **Real-time Sensor Monitoring**   
+- **Real-time Sensor Monitoring**  
   🌀 Gyroscope orientation visualization  
   🌡️ Ambient temperature sensing
 
 - **Health History**  
   📈 24-hour timeline of sensor data  
-  📊 Interactive charts and graphs  
+  📊 Interactive charts and graphs
 
 ## Getting Started 🚀
 
@@ -35,6 +35,6 @@
 
 ## Screenshots 📸
 
-| Emergency SOS               | Health Analytics                   |
+| Emergency SOS               | Sensor data                        |
 | --------------------------- | ---------------------------------- |
 | ![SOS](screenshots/sos.jpg) | ![Analytics](screenshots/data.jpg) |
