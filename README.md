@@ -14,7 +14,7 @@
 
 ## Getting Started 🚀
 
-### Prerequisites
+### Prerequisites to develop on your own
 
 - Android Studio Flamingo (2022.2.1) or newer
 - Android SDK 35 (Android 15)
